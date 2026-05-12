@@ -61,6 +61,7 @@ def register(request: UserRegisterRequest, db: Session = Depends(get_db)):
         email=request.email,
         password=request.password,
         full_name=request.full_name,
+        role=request.role,
         department_id=request.department_id,
         school_id=request.school_id,
     )
@@ -123,3 +124,23 @@ def logout(
     """
     auth_service.logout(token)
     return {"message": "Successfully logged out"}
+
+
+@router.get(
+    "/me",
+    response_model=UserResponse,
+    summary="Get current user profile",
+)
+def get_me(
+    current_user: User = Depends(get_current_user_dependency),
+    db: Session = Depends(get_db),
+):
+    """Get the authenticated user's own profile.
+
+    Any authenticated user can access this endpoint regardless of role.
+    """
+    from app.models.database import UserRole as UserRoleModel
+
+    user_role = db.query(UserRoleModel).filter(UserRoleModel.user_id == current_user.id).first()
+    current_user.role = user_role.role if user_role else "User"
+    return current_user

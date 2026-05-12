@@ -101,6 +101,7 @@ def register(
     email: str,
     password: str,
     full_name: str,
+    role: Optional[str] = None,
     department_id: Optional[int] = None,
     school_id: Optional[int] = None,
 ) -> User:
@@ -109,8 +110,16 @@ def register(
     - Checks for duplicate email (raises ConflictError if exists)
     - Hashes password with bcrypt
     - Creates user record in DB
+    - Assigns role if provided
     - Returns user object (password_hash excluded from API response via schema)
     """
+    VALID_ROLES = {"DeptAdmin", "SchoolAdmin", "Teacher", "Parent"}
+
+    if role and role not in VALID_ROLES:
+        raise ValidationError(
+            detail=f"Invalid role '{role}'. Supported roles: {', '.join(sorted(VALID_ROLES))}"
+        )
+
     # Check for existing user with same email
     existing_user = db.query(User).filter(User.email == email).first()
     if existing_user:
@@ -129,8 +138,18 @@ def register(
         school_id=school_id,
     )
     db.add(user)
+    db.flush()
+
+    # Assign role if provided
+    if role:
+        user_role = UserRole(user_id=user.id, role=role)
+        db.add(user_role)
+
     db.commit()
     db.refresh(user)
+
+    # Attach role for serialization
+    user.role = role or "User"
 
     return user
 

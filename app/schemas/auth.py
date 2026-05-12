@@ -15,6 +15,7 @@ class UserRegisterRequest(BaseModel):
     id_number: Optional[str] = Field(None, max_length=50)
     gender: Optional[str] = Field(None, max_length=20)
     date_of_birth: Optional[str] = Field(None, description="Date of birth (YYYY-MM-DD)")
+    role: Optional[str] = Field(None, description="Role to assign: DeptAdmin, SchoolAdmin, Teacher, Parent")
     department_id: Optional[int] = None
     school_id: Optional[int] = None
 
