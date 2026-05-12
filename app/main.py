@@ -7,11 +7,13 @@ from app.core.middleware import add_middleware
 from app.core.exceptions import register_exception_handlers
 import uvicorn
 import logging
+import os
 from pathlib import Path
 
-# Create upload directories if they don't exist
-Path(settings.UPLOAD_FOLDER_IMAGES).mkdir(parents=True, exist_ok=True)
-Path(settings.UPLOAD_FOLDER_VIDEOS).mkdir(parents=True, exist_ok=True)
+# Only create upload directories if NOT running on Vercel
+if not os.environ.get("VERCEL"):
+    Path(settings.UPLOAD_FOLDER_IMAGES).mkdir(parents=True, exist_ok=True)
+    Path(settings.UPLOAD_FOLDER_VIDEOS).mkdir(parents=True, exist_ok=True)
 
 def create_app():
     app = FastAPI(
@@ -23,7 +25,7 @@ def create_app():
     # Add CORS middleware
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],  # Configure this properly in production
+        allow_origins=["*"],
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
@@ -32,8 +34,10 @@ def create_app():
     # Register global exception handlers
     register_exception_handlers(app)
     
-    # Mount static files
-    app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+    # Mount static files safely
+    # Check if directory exists before mounting to avoid startup errors on Vercel
+    if os.path.exists("uploads"):
+        app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
     
     # Include API routers
     app.include_router(api_router, prefix=settings.API_V1_STR)
@@ -47,7 +51,6 @@ def create_app():
         }
     
     return app
-
 
 app = create_app()
 
