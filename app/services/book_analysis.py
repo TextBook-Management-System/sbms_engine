@@ -63,8 +63,13 @@ Scoring guide:
 """
 
 
-async def analyze_uploaded_file(file: UploadFile, book_id: int) -> Dict[str, Any]:
-    """Analyze uploaded image/video file for book quality assessment."""
+async def analyze_uploaded_file(file: UploadFile, book_copy_id: int) -> Dict[str, Any]:
+    """Analyze uploaded image/video file for book quality assessment.
+
+    Args:
+        file: The uploaded image or video file.
+        book_copy_id: The ID of the specific book copy being analyzed.
+    """
 
     file_extension = file.filename.split('.')[-1].lower()
 
@@ -77,8 +82,8 @@ async def analyze_uploaded_file(file: UploadFile, book_id: int) -> Dict[str, Any
     else:
         raise ValueError(f"File type '{file_extension}' not supported")
 
-    # Create unique filename
-    filename = f"book_{book_id}_{file.filename}"
+    # Create unique filename using book_copy_id
+    filename = f"book_copy_{book_copy_id}_{file.filename}"
     file_path = os.path.join(upload_folder, filename)
 
     # Read file content
@@ -103,7 +108,7 @@ async def analyze_uploaded_file(file: UploadFile, book_id: int) -> Dict[str, Any
     # Add metadata
     analysis_result["file_path"] = file_path
     analysis_result["file_type"] = file_type
-    analysis_result["book_id"] = book_id
+    analysis_result["book_copy_id"] = book_copy_id
 
     return analysis_result
 

@@ -81,15 +81,39 @@ def create_learner(
     payload: LearnerCreate,
     db: Session = Depends(get_db),
 ):
-    """Create a new learner. Validates that grade_id references an existing grade."""
+    """Create a new learner. Validates that grade_id references an existing grade.
+    
+    Optionally links the learner to a parent if parent_id is provided.
+    """
     _validate_grade_exists(db, payload.grade_id)
 
     learner = Learner(
         grade_id=payload.grade_id,
         first_name=payload.first_name,
         last_name=payload.last_name,
+        id_number=payload.id_number,
+        gender=payload.gender,
+        date_of_birth=payload.date_of_birth,
     )
     db.add(learner)
+    db.flush()
+
+    # Optionally link to parent
+    if payload.parent_id is not None:
+        _validate_user_has_parent_role(db, payload.parent_id)
+        # Check for duplicate link
+        existing_link = (
+            db.query(ParentLearner)
+            .filter(
+                ParentLearner.parent_id == payload.parent_id,
+                ParentLearner.learner_id == learner.id,
+            )
+            .first()
+        )
+        if existing_link is None:
+            link = ParentLearner(parent_id=payload.parent_id, learner_id=learner.id)
+            db.add(link)
+
     db.commit()
     db.refresh(learner)
     return learner

@@ -1,13 +1,4 @@
-"""AI model versions endpoints.
 
-Provides endpoints for managing AI model versions used for book condition scanning:
-- GET list (paginated)
-- POST register (new model, inactive by default)
-- PUT activate (mutual exclusivity within same model_type)
-- GET active (currently active model or 404)
-
-Validates: Requirements 14.1–14.8
-"""
 
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
@@ -27,24 +18,12 @@ def list_ai_models(
     params: PaginationParams = Depends(),
     db: Session = Depends(get_db),
 ):
-    """Return a paginated list of all registered AI model versions.
-
-    Validates: Requirement 14.1
-    """
     query = db.query(AIModelVersion)
     return paginate(query, params)
 
 
 @router.post("", response_model=AIModelResponse, status_code=HTTP_201_CREATED)
 def register_ai_model(payload: AIModelCreate, db: Session = Depends(get_db)):
-    """Register a new AI model version.
-
-    The model is created with is_active=False by default.
-    Enforces unique (model_name, model_version) combination — returns 409 on duplicate.
-    Returns 422 on validation failure (handled by Pydantic).
-
-    Validates: Requirements 14.2, 14.7, 14.8
-    """
     # Check for duplicate model_name + model_version combination
     existing = (
         db.query(AIModelVersion)
@@ -73,12 +52,6 @@ def register_ai_model(payload: AIModelCreate, db: Session = Depends(get_db)):
 
 @router.get("/active", response_model=AIModelResponse)
 def get_active_ai_model(db: Session = Depends(get_db)):
-    """Return the currently active AI model version.
-
-    Returns 404 if no active model is configured.
-
-    Validates: Requirements 14.4, 14.5
-    """
     active_model = (
         db.query(AIModelVersion).filter(AIModelVersion.is_active == True).first()  # noqa: E712
     )
@@ -89,14 +62,6 @@ def get_active_ai_model(db: Session = Depends(get_db)):
 
 @router.put("/{id}/activate", response_model=AIModelResponse)
 def activate_ai_model(id: int, db: Session = Depends(get_db)):
-    """Activate an AI model version.
-
-    Sets the specified model as active and deactivates all other models
-    sharing the same model_type value (mutual exclusivity).
-    Returns 404 if the model ID does not exist.
-
-    Validates: Requirements 14.3, 14.6
-    """
     # Find the model to activate
     ai_model = db.query(AIModelVersion).filter(AIModelVersion.id == id).first()
     if ai_model is None:

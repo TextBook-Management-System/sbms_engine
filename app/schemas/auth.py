@@ -12,6 +12,9 @@ class UserRegisterRequest(BaseModel):
     email: EmailStr
     password: str = Field(..., min_length=8)
     full_name: str = Field(..., min_length=1, max_length=200)
+    id_number: Optional[str] = Field(None, max_length=50)
+    gender: Optional[str] = Field(None, max_length=20)
+    date_of_birth: Optional[str] = Field(None, description="Date of birth (YYYY-MM-DD)")
     department_id: Optional[int] = None
     school_id: Optional[int] = None
 
@@ -51,6 +54,9 @@ class UserResponse(BaseModel):
     id: int
     email: str
     full_name: str
+    id_number: Optional[str] = None
+    gender: Optional[str] = None
+    date_of_birth: Optional[datetime] = None
     is_active: bool
     role: Optional[str] = None
     department_id: Optional[int] = None

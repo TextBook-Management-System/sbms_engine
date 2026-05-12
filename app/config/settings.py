@@ -33,6 +33,9 @@ class Settings(BaseSettings):
     GEMINI_API_KEY: str = ""
     GEMINI_MODEL: str = "gemini-2.0-flash"
     
+    # Firebase Storage
+    FIREBASE_STORAGE_BUCKET: str = "hirepath-2dbd2.firebasestorage.app"
+    
     # Geolocation Settings
     MAX_DISTANCE_KM: float = 50.0  # Maximum distance for book transfer suggestions
     
