@@ -1,0 +1,29 @@
+__pycache__/
+*.pyc
+*.pyo
+.env
+uploads/
+logs/
+models/
+*.db
+*.sqlite3
+
+# Dev/test scripts
+quick_run.py
+quick_test.py
+verify_service.py
+create_init_files.py
+test_setup.py
+setup_env.py
+initialize_db.py
+
+# Tests
+tests/
+
+# IDE
+.vscode/
+.idea/
+.kiro/
+
+# Git
+.git/

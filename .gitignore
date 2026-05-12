@@ -1,0 +1,53 @@
+# Environment
+.env
+.venv/
+venv/
+env/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Testing
+.pytest_cache/
+.hypothesis/
+htmlcov/
+.coverage
+coverage.xml
+
+# Database
+*.db
+*.sqlite3
+
+# Uploads
+uploads/
+
+# Logs
+logs/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Models (large binary files)
+models/*.pth
+models/*.bin
+
+# Kiro
+.kiro/
+
+# FastAPI Cloud
+.fastapicloud
