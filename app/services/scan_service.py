@@ -31,8 +31,9 @@ Return ONLY a valid JSON object (no markdown fences) with:
 {
     "condition": "<one of: excellent, good, fair, poor, unusable>",
     "confidence_score": <float between 0.0 and 1.0>,
+    "quality_score": <number 0-100>,
     "issues": ["list of issues found"],
-    "quality_score": <number 0-100>
+    "suggestions": ["list of actionable suggestions for the book's use or replacement"]
 }
 
 Scoring guide:
@@ -121,6 +122,7 @@ async def _invoke_gemini_analysis(image_data: bytes, file_extension: str) -> dic
             "confidence_score": round(confidence, 4),
             "quality_score": analysis.get("quality_score", 50),
             "issues": analysis.get("issues", []),
+            "suggestions": analysis.get("suggestions", []),
         }
 
     except json.JSONDecodeError as e:
@@ -209,11 +211,18 @@ async def create_scan(
                 error_type="server_error",
             ) from exc
 
+    import json as _json
+
+    issues_str = _json.dumps(result.get("issues", [])) if result.get("issues") else None
+    suggestions_str = _json.dumps(result.get("suggestions", [])) if result.get("suggestions") else None
+
     scan = BookConditionScan(
         book_copy_id=book_copy_id,
         ai_model_id=active_model.id,
         condition=result["condition"],
         confidence_score=result["confidence_score"],
+        ai_issues=issues_str,
+        ai_suggestions=suggestions_str,
         scan_image_path=firebase_url or scan_image_path,
     )
     db.add(scan)

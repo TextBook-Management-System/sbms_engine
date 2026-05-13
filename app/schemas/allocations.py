@@ -16,6 +16,7 @@ class AllocationCreate(BaseModel):
     ai_confidence_score: Optional[float] = None
     ai_quality_score: Optional[int] = None
     ai_issues: Optional[str] = None
+    ai_suggestions: Optional[str] = None
 
 
 class AllocationResponse(BaseModel):
@@ -32,5 +33,6 @@ class AllocationResponse(BaseModel):
     ai_confidence_score: Optional[float] = None
     ai_quality_score: Optional[int] = None
     ai_issues: Optional[str] = None
+    ai_suggestions: Optional[str] = None
 
     model_config = {"from_attributes": True}

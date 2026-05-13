@@ -64,6 +64,7 @@ def allocate(
     ai_confidence_score: Optional[float] = None,
     ai_quality_score: Optional[int] = None,
     ai_issues: Optional[str] = None,
+    ai_suggestions: Optional[str] = None,
 ) -> BookAllocation:
     """Create a new book allocation with optional image link and AI fields."""
     _validate_book_copy_exists(db, book_copy_id)
@@ -79,6 +80,7 @@ def allocate(
         ai_confidence_score=ai_confidence_score,
         ai_quality_score=ai_quality_score,
         ai_issues=ai_issues,
+        ai_suggestions=ai_suggestions,
     )
     db.add(allocation)
     db.commit()

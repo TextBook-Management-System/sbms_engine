@@ -23,6 +23,7 @@ def create_allocation(payload: AllocationCreate, db: Session = Depends(get_db)):
         ai_confidence_score=payload.ai_confidence_score,
         ai_quality_score=payload.ai_quality_score,
         ai_issues=payload.ai_issues,
+        ai_suggestions=payload.ai_suggestions,
     )
     return allocation
 
