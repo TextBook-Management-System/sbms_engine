@@ -517,6 +517,7 @@ class BookConditionScan(Base):
     verified_condition: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
     ai_issues: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     ai_suggestions: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    ai_quality_score: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     scan_image_path: Mapped[str] = mapped_column(String(500), nullable=False)
     scanned_at: Mapped[datetime] = mapped_column(
         DateTime, server_default=func.now(), nullable=False

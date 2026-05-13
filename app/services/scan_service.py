@@ -224,6 +224,7 @@ async def create_scan(
         confidence_score=result["confidence_score"],
         ai_issues=issues_str,
         ai_suggestions=suggestions_str,
+        ai_quality_score=result.get("quality_score"),
         scan_image_path=firebase_url,
     )
     db.add(scan)

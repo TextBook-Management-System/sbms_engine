@@ -31,6 +31,7 @@ class ScanResponse(BaseModel):
     verified_condition: Optional[str] = None
     ai_issues: Optional[str] = None
     ai_suggestions: Optional[str] = None
+    ai_quality_score: Optional[int] = None
     scan_image_path: str
     scanned_at: datetime
 
