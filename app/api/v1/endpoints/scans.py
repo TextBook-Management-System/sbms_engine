@@ -64,6 +64,35 @@ def verify_scan(
 book_copy_scans_router = APIRouter(prefix="/book-copies", tags=["scans"])
 
 
+@router.post("/return-comparison")
+async def return_scan_comparison(
+    allocation_id: int = Form(..., description="ID of the allocation being returned"),
+    return_image: UploadFile = File(..., description="Current book image for comparison (JPEG or PNG)"),
+    db: Session = Depends(get_db),
+):
+    if return_image.content_type not in ALLOWED_CONTENT_TYPES:
+        raise ValidationError(
+            detail=f"Invalid image format. Allowed: JPEG, PNG. Got: {return_image.content_type}"
+        )
+
+    image_content = await return_image.read()
+    if len(image_content) > MAX_IMAGE_SIZE_BYTES:
+        raise ValidationError(
+            detail=f"Image size exceeds 10MB limit. Got: {len(image_content)} bytes"
+        )
+
+    file_extension = "jpg" if return_image.content_type == "image/jpeg" else "png"
+
+    result = await scan_service.create_return_scan(
+        db=db,
+        allocation_id=allocation_id,
+        return_image_data=image_content,
+        file_extension=file_extension,
+    )
+
+    return result
+
+
 @book_copy_scans_router.get(
     "/{book_copy_id}/scans", response_model=PaginatedResponse[ScanResponse]
 )
