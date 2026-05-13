@@ -275,7 +275,7 @@ def get_parent_learners_with_books(
     - All book allocations (with book copy details)
     - Parent acknowledgements for each allocation
     """
-    from app.models.database import BookAllocation, BookCopy, Book, ParentAcknowledgement
+    from app.models.database import BookAllocation, BookCopy, Book, ParentAcknowledgement, School
 
     user = db.query(User).filter(User.id == parent_id).first()
     if user is None:
@@ -290,6 +290,8 @@ def get_parent_learners_with_books(
 
     for link in links:
         learner = link.learner
+        grade = learner.grade
+        school = db.query(School).filter(School.id == grade.school_id).first() if grade else None
 
         allocations = (
             db.query(BookAllocation)
@@ -348,6 +350,8 @@ def get_parent_learners_with_books(
             "first_name": learner.first_name,
             "last_name": learner.last_name,
             "grade_id": learner.grade_id,
+            "grade_name": grade.name if grade else None,
+            "school_name": school.name if school else None,
             "allocations": allocation_list,
         })
 
