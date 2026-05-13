@@ -16,6 +16,7 @@ from app.api.v1.endpoints import (
     inventory,
     learners,
     replacement_requests,
+    reports,
     scans,
     schools,
     subjects,
@@ -53,3 +54,4 @@ api_router.include_router(escalations.router)
 # Additional utility routers (not part of core SBMS domain endpoints)
 api_router.include_router(upload.router, prefix="/upload", tags=["upload"])
 api_router.include_router(suggestions.router, prefix="/suggestions", tags=["suggestions"])
+api_router.include_router(reports.router)
