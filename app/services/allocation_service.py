@@ -59,24 +59,13 @@ def allocate(
     db: Session,
     book_copy_id: int,
     learner_id: int,
+    scan_image_url: Optional[str] = None,
+    ai_condition: Optional[str] = None,
+    ai_confidence_score: Optional[float] = None,
+    ai_quality_score: Optional[int] = None,
+    ai_issues: Optional[str] = None,
 ) -> BookAllocation:
-    """Create a new book allocation.
-
-    Validates that both book_copy_id and learner_id exist, and that the book copy
-    does not already have an active allocation.
-
-    Args:
-        db: Database session.
-        book_copy_id: ID of the book copy to allocate.
-        learner_id: ID of the learner receiving the book.
-
-    Returns:
-        The newly created BookAllocation instance with status "active".
-
-    Raises:
-        NotFoundError: If book_copy_id or learner_id does not exist (404).
-        ConflictError: If the book copy already has an active allocation (409).
-    """
+    """Create a new book allocation with optional image link and AI fields."""
     _validate_book_copy_exists(db, book_copy_id)
     _validate_learner_exists(db, learner_id)
     _check_active_allocation(db, book_copy_id)
@@ -85,6 +74,11 @@ def allocate(
         book_copy_id=book_copy_id,
         learner_id=learner_id,
         status="active",
+        scan_image_url=scan_image_url,
+        ai_condition=ai_condition,
+        ai_confidence_score=ai_confidence_score,
+        ai_quality_score=ai_quality_score,
+        ai_issues=ai_issues,
     )
     db.add(allocation)
     db.commit()

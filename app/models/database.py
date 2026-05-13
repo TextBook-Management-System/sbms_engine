@@ -558,6 +558,11 @@ class BookAllocation(Base):
         DateTime, server_default=func.now(), nullable=False
     )
     return_date: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    scan_image_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    ai_condition: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    ai_confidence_score: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    ai_quality_score: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    ai_issues: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
     __table_args__ = (
         CheckConstraint(

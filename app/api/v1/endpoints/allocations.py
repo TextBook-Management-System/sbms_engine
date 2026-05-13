@@ -1,15 +1,3 @@
-"""Book allocations endpoints.
-
-Provides endpoints for creating book-to-learner allocations, processing returns,
-and listing/retrieving allocation records with optional filters.
-
-Enforces:
-- Mutual exclusivity: cannot allocate an already-active book copy (409)
-- Status transition: only active → returned (409 if already returned)
-
-Validates: Requirements 16.1–16.8
-"""
-
 from typing import Optional
 
 from fastapi import APIRouter, Depends, Query
@@ -26,16 +14,15 @@ router = APIRouter(prefix="/allocations", tags=["allocations"])
 
 @router.post("", response_model=AllocationResponse, status_code=HTTP_201_CREATED)
 def create_allocation(payload: AllocationCreate, db: Session = Depends(get_db)):
-    """Create a new book allocation.
-
-    Allocates a book copy to a learner with status "active".
-    Returns 404 if book_copy_id or learner_id does not exist.
-    Returns 409 if the book copy already has an active allocation.
-    """
     allocation = allocation_service.allocate(
         db=db,
         book_copy_id=payload.book_copy_id,
         learner_id=payload.learner_id,
+        scan_image_url=payload.scan_image_url,
+        ai_condition=payload.ai_condition,
+        ai_confidence_score=payload.ai_confidence_score,
+        ai_quality_score=payload.ai_quality_score,
+        ai_issues=payload.ai_issues,
     )
     return allocation
 
@@ -48,10 +35,6 @@ def list_allocations(
     params: PaginationParams = Depends(),
     db: Session = Depends(get_db),
 ):
-    """List allocations with optional filters and pagination.
-
-    Supports filtering by learner_id, book_copy_id, and status.
-    """
     return allocation_service.list_allocations(
         db=db,
         params=params,
@@ -63,16 +46,9 @@ def list_allocations(
 
 @router.get("/{id}", response_model=AllocationResponse)
 def get_allocation(id: int, db: Session = Depends(get_db)):
-    """Get an allocation by ID. Returns 404 if not found."""
     return allocation_service.get_by_id(db, id)
 
 
 @router.put("/{id}/return", response_model=AllocationResponse)
 def return_allocation(id: int, db: Session = Depends(get_db)):
-    """Process a book return.
-
-    Updates the allocation status to "returned" and sets the return_date.
-    Returns 404 if allocation not found.
-    Returns 409 if the allocation is not in "active" status.
-    """
     return allocation_service.return_allocation(db, id)
