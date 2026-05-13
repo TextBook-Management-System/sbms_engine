@@ -256,3 +256,102 @@ def delete_parent_learner_link(
     db.delete(link)
     db.commit()
     return None
+
+
+# ---------------------------------------------------------------------------
+# Parent's view: learners with books, allocations, and acknowledgements
+# ---------------------------------------------------------------------------
+
+
+@router.get("/parent/{parent_id}/children")
+def get_parent_learners_with_books(
+    parent_id: int,
+    db: Session = Depends(get_db),
+):
+    """Get all learners linked to a parent with their book allocations and acknowledgements.
+
+    Returns each learner with:
+    - Learner details
+    - All book allocations (with book copy details)
+    - Parent acknowledgements for each allocation
+    """
+    from app.models.database import BookAllocation, BookCopy, Book, ParentAcknowledgement
+
+    user = db.query(User).filter(User.id == parent_id).first()
+    if user is None:
+        raise NotFoundError(detail=f"User with id {parent_id} not found")
+
+    links = db.query(ParentLearner).filter(ParentLearner.parent_id == parent_id).all()
+
+    if not links:
+        return {"parent_id": parent_id, "learners": []}
+
+    result_learners = []
+
+    for link in links:
+        learner = link.learner
+
+        allocations = (
+            db.query(BookAllocation)
+            .filter(BookAllocation.learner_id == learner.id)
+            .all()
+        )
+
+        allocation_list = []
+        for alloc in allocations:
+            book_copy = db.query(BookCopy).filter(BookCopy.id == alloc.book_copy_id).first()
+
+            book_info = None
+            if book_copy:
+                book = db.query(Book).filter(Book.id == book_copy.book_id).first()
+                book_info = {
+                    "id": book_copy.id,
+                    "qr_code": book_copy.qr_code,
+                    "condition": book_copy.condition,
+                    "book_title": book.title if book else None,
+                    "book_isbn": book.isbn if book else None,
+                }
+
+            acknowledgements = (
+                db.query(ParentAcknowledgement)
+                .filter(
+                    ParentAcknowledgement.allocation_id == alloc.id,
+                    ParentAcknowledgement.parent_id == parent_id,
+                )
+                .all()
+            )
+
+            ack_list = [
+                {
+                    "id": ack.id,
+                    "status": ack.status,
+                    "reason": ack.reason,
+                    "created_at": ack.created_at.isoformat() if ack.created_at else None,
+                }
+                for ack in acknowledgements
+            ]
+
+            allocation_list.append({
+                "id": alloc.id,
+                "status": alloc.status,
+                "allocation_date": alloc.allocation_date.isoformat() if alloc.allocation_date else None,
+                "return_date": alloc.return_date.isoformat() if alloc.return_date else None,
+                "scan_image_url": alloc.scan_image_url,
+                "ai_condition": alloc.ai_condition,
+                "ai_quality_score": alloc.ai_quality_score,
+                "book_copy": book_info,
+                "acknowledgements": ack_list,
+            })
+
+        result_learners.append({
+            "id": learner.id,
+            "first_name": learner.first_name,
+            "last_name": learner.last_name,
+            "grade_id": learner.grade_id,
+            "allocations": allocation_list,
+        })
+
+    return {
+        "parent_id": parent_id,
+        "learners": result_learners,
+    }
