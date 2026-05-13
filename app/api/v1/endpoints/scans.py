@@ -16,11 +16,6 @@ router = APIRouter(prefix="/scans", tags=["scans"])
 
 MAX_IMAGE_SIZE_BYTES = 10 * 1024 * 1024
 ALLOWED_CONTENT_TYPES = {"image/jpeg", "image/png"}
-SCAN_IMAGES_DIR = os.path.join("uploads", "scans")
-
-
-def _ensure_upload_dir() -> None:
-    os.makedirs(SCAN_IMAGES_DIR, exist_ok=True)
 
 
 @router.post("", response_model=ScanResponse, status_code=HTTP_201_CREATED)
@@ -40,26 +35,14 @@ async def create_scan(
             detail=f"Image size exceeds maximum allowed size of 10MB. Got: {len(image_content)} bytes"
         )
 
-    _ensure_upload_dir()
     file_extension = "jpg" if scan_image.content_type == "image/jpeg" else "png"
-    filename = f"{uuid.uuid4().hex}.{file_extension}"
-    image_path = os.path.join(SCAN_IMAGES_DIR, filename)
 
-    with open(image_path, "wb") as f:
-        f.write(image_content)
-
-    try:
-        scan = await scan_service.create_scan(
-            db=db,
-            book_copy_id=book_copy_id,
-            scan_image_path=image_path,
-            image_data=image_content,
-            file_extension=file_extension,
-        )
-    except Exception:
-        if os.path.exists(image_path):
-            os.remove(image_path)
-        raise
+    scan = await scan_service.create_scan(
+        db=db,
+        book_copy_id=book_copy_id,
+        image_data=image_content,
+        file_extension=file_extension,
+    )
 
     return scan
 
